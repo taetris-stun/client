@@ -8,7 +8,7 @@
   "private": true,
   "scripts": {
     "start": "parcel serve src/index.html",
-    "build": "rm -rf dist && parcel build --no-source-maps src/index.html",
+    "build": "rm -rf dist/* && parcel build --no-source-maps --no-cache src/index.html",
     "deploy": "yarn build && gh-pages -d dist"
   },
   "devDependencies": {
