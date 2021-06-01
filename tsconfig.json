@@ -1,8 +1,12 @@
 {
-    "compilerOptions": {
-        "module": "commonjs"
-    },
-    "exclude": [
-        "node_modules"
-    ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "src/blockrain"],
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ES6",
+    "strict": true,
+    "removeComments": true,
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+  }
 }

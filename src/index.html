@@ -1,13 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <title>Taetris:STUN</title>
 </head>
 <body>
-    <div id="app"></div>
-    <script src="./index.js"></script>
+  <div id="config">
+    <form action="javascript:void(0);">
+      <h1>Taetris : STUN</h1>
+
+      <label for="endpoint">Server address <b>↴</b></label>
+      <input id="endpoint" type="text" required placeholder="ws://79.126.182.39:14037">
+  
+      <label for="username">Username <b>↴</b></label>
+      <input id="username" type="text" required>
+  
+      <label for="shocker">Shocker ID <b>↴</b></label>
+      <input id="shocker" type="password" required placeholder="xxxx-xxxx-xxxx">
+  
+      <input id="submit" type="submit" value=">">
+    </form>
+
+  </div>
+  <div id="game">
+
+  </div>
+  <script src="index.ts"></script>
 </body>
 </html>
