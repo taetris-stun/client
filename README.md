@@ -1,3 +1,3 @@
-# taetris-stun.github.io
+# taetris-stun-client
 
 No README, fuck you
