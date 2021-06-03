@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "colyseus.js": "^0.14.12",
-    "jquery": "^3.6.0"
+    "jquery": "^3.6.0",
+    "sweetalert2": "^11.0.16"
   }
 }
