@@ -14,6 +14,11 @@ require('./blockrain/blockrain.jquery.src.js')
 require('./blockrain/blockrain.jquery.themes.js')
 require('./blockrain/blockrain.css')
 
+const downScaleFactor = 16
+const dropedFrames = 20
+const canvasWidth = 300
+const canvasHeight = 600
+
 // Show config
 // $('#config').show()
 // $('#ready').hide()
@@ -96,10 +101,79 @@ function setupGame(room: Colyseus.Room) {
   $('#ready').hide()
   $('#game').show()
 
-  // TODO:  - setup blockrain
-  //        - blockrain callbacks to server
-  //        - process canvas data
-  //        - transmit canvas data to server
-  //        - html layout for local game and streamed-in games
+  const game = $('#blockrain')
 
+  // Set canvas dimensions
+  game.attr('style', `width: ${canvasWidth}px; height: ${canvasHeight}px;`)
+
+  let renders = 0
+  game.blockrain({
+    theme: 'candy',
+    onLine: (lines: number, scoreIncrement: number, score: number) => {
+      console.log('line', lines)
+    },
+    onGameOver: (score: number) => {
+      console.log('gameover', score)
+    },
+    onRender: (ctx: CanvasRenderingContext2D) => {
+      renders++
+      if (renders === dropedFrames) {
+        sendCanvas(room, ctx)
+        renders = 0
+      }
+    },
+  })
+
+  game.blockrain('start')
+
+
+  room.state.players.forEach(player => {
+    if (room.sessionId !== player.sessionId) {
+      // This executes for everyone but yourself
+
+      // player.onChange = (changes) => {
+      //   changes.forEach(change => {
+      //     console.log(player.username, change.field, change.value)
+      //   })
+      // }
+
+      // Add html layout for every player 
+      $('#game').append(`
+      <div class="player">
+        <div>${player.username}</div>
+        <canvas id="${player.sessionId}"></canvas>
+      </div>
+      `)
+    }
+  })
+}
+
+function sendCanvas(room: Colyseus.Room, ctx: CanvasRenderingContext2D) {
+  let originalImage = Array.from(ctx.getImageData(0, 0, canvasWidth, canvasHeight).data)
+  console.log('org', originalImage.length)
+
+  /*
+  Downscale image data
+    Loop runs for every (downScaleFactor)th item in array (every 2nd pixel)
+    Calculates average of R, G and B
+    Pushes B&W value into new array
+  */
+  let compressedImage: number[] = []
+  for (let i = 0; i < originalImage.length; i = i+4*downScaleFactor) {
+    const R = originalImage[i]
+    const G = originalImage[i+1]
+    const B = originalImage[i+2]
+
+    const BW = Math.floor((R+G+B) / 3)
+
+    compressedImage.push(BW)
+  }
+
+  console.log('comp', compressedImage.length)
+
+  room.send('canvas', JSON.stringify(compressedImage))
+
+  // Free memory (prob. useless?)
+  originalImage = []
+  compressedImage = []
 }

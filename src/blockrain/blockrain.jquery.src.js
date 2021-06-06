@@ -29,7 +29,7 @@
       onGameOver: function(score){},
 
       // (tinkertoe) When canvas gets updated. Returns canvas object
-      onRender: function (canvas){},
+      onRender: function (ctx){},
 
       // When a block is placed
       onPlaced: function(){},
@@ -1254,13 +1254,15 @@
         '<div class="blockrain-game-over-holder" style="position:absolute;">'+
           '<div class="blockrain-game-over">'+
             '<div class="blockrain-game-over-msg">'+ this.options.gameOverText +'</div>'+
-            '<a class="blockrain-btn blockrain-game-over-btn">'+ this.options.restartButtonText +'</a>'+
+            // (tinkertoe)
+            // '<a class="blockrain-btn blockrain-game-over-btn">'+ this.options.restartButtonText +'</a>'+
           '</div>'+
         '</div>').hide();
-      game._$gameover.find('.blockrain-game-over-btn').click(function(event){
-        event.preventDefault();
-        game.restart();
-      });
+      // (tinkertoe)
+      // game._$gameover.find('.blockrain-game-over-btn').click(function(event){
+      //   event.preventDefault();
+      //   game.restart();
+      // });
       game._$gameholder.append(game._$gameover);
 
       this._createControls();
