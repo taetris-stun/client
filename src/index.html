@@ -16,13 +16,13 @@
       <h1>Taetris : STUN</h1>
 
       <label for="endpoint">Server address <b>↴</b></label>
-      <input id="endpoint" type="text" required placeholder="ws://79.126.182.39:14037">
+      <input id="endpoint" type="text" placeholder="ws://79.126.182.39:14037">
   
       <label for="username">Username <b>↴</b></label>
       <input id="username" type="text" required>
   
       <label for="shocker">Shocker ID <b>↴</b></label>
-      <input id="shocker" type="password" required placeholder="xxxx-xxxx-xxxx">
+      <input id="shocker" type="text" required placeholder="xxxxxx">
   
       <input id="submit" type="submit" value=">">
     </form>
@@ -32,7 +32,7 @@
   <button id="ready" style="display: none;">ready</button>
 
   <div id="game" class="game" style="display: none;">
-    <div id="blockrain"></div>
+    <!-- This gets populated by code -->
   </div>
 
   <script src="index.ts"></script>
