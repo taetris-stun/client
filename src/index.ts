@@ -96,75 +96,27 @@ function setupReadyCheck(room: Colyseus.Room) {
 }
 
 function setupGame(room: Colyseus.Room) {
+  // Setup playing fields
   room.state.players.forEach(player => {
+
     // Differenciate between you and others
-    if (room.sessionId === player.sessionId) {
-      /*
-        THIS EXECUTES FOR YOURSELF
-      */
-
-      // Create html layout for local player
-      $('#game').append(`
-        <div class="player" id="${player.sessionId}-player">
-          <div class="username" id="${player.sessionId}-username"></div>
-          <div class="canvas" id="${player.sessionId}-canvas" style="width: ${canvasWidth}px; height: ${canvasHeight}px;"></div>
-        </div>
-      `)
-
-      // Set username in layout
-      $('#' + player.sessionId + '-username').text(player.username)
-
-      // Setup blockrain
-      const canvas = $('#' + player.sessionId + '-canvas')
-
-      let renderCount = 0
-      canvas.blockrain({
-        theme: 'candy',
-        onLine: (lines: number, scoreIncrement: number, score: number) => {
-          room.send('line', lines)
-        },
-        onGameOver: (score: number) => {
-          room.send('gameover', score)
-        },
-        onRender: (ctx: CanvasRenderingContext2D) => {
-          renderCount++
-          if (renderCount === dropedFrames) {
-            sendCanvas(room, ctx)
-            renderCount = 0
-          }
-        },
-      })
-
-      canvas.blockrain('start')
-
-    } else {
-      /*
-        THIS EXECUTES FOR EVERYBODY ELSE
-      */
-
-      // Create html layout for other players
-      $('#game').append(`
-        <div class="player" id="${player.sessionId}-player">
-          <div class="username" id="${player.sessionId}-username"></div>
-          <canvas class="canvas" id="${player.sessionId}-canvas" width="${canvasWidth}" height="${canvasHeight}"></canvas>
-        </div>
-      `)
-
-      // Set username in layout
-      $('#' + player.sessionId + '-username').text(player.username)
-
-      // Handle state updates
-      player.onChange = (changes) => {
-        changes.forEach(change => {
-          switch (change.field) {
-            case 'canvas': receiveCanvas(player.sessionId, change.value)
-            default: void(0)
-          }
-        })
-      }
-
+    if (
+      room.sessionId === player.sessionId 
+      && player.username !== 'spectator'
+    ) {
+      setupLocalPlayer(room, player)
     }
+
+    if (
+      room.sessionId !== player.sessionId
+      && !isMobile()
+    ) {
+      setupNetworkPlayer(room, player)
+    }
+    
   })
+
+  // TODO: Throw error on mobile spectator (currently: empty screen)
 
   // Change view after DOM is populated
   $('#config').hide()
@@ -187,11 +139,11 @@ function sendCanvas(room: Colyseus.Room, ctx: CanvasRenderingContext2D) {
 
   const originalImage = Array.from(ctx.getImageData(0, 0, canvasWidth, canvasHeight).data)
   const compressedImage: number[] = []
+
   for (let i = 0; i < originalImage.length; i = i+4*scaleFactor) {
     const R = originalImage[i]
     const G = originalImage[i+1]
     const B = originalImage[i+2]
-
     const BW = Math.floor((R+G+B) / 3)
 
     compressedImage.push(BW)
@@ -203,10 +155,12 @@ function sendCanvas(room: Colyseus.Room, ctx: CanvasRenderingContext2D) {
 function receiveCanvas(sessionId: string, data: string) {
   /*
     Upscale image data
-
+    Reverse the compression back to full scale
   */
+
   const originalImage: number[] = []
   const compressedImage = JSON.parse(data) as Array<number>
+
   for (let i1 = 0; i1 < compressedImage.length; i1++) {
     for (let i2 = 0; i2 < scaleFactor; i2++) {
       originalImage.push(compressedImage[i1]) // R
@@ -220,4 +174,84 @@ function receiveCanvas(sessionId: string, data: string) {
   const canvas = $('#' + sessionId + '-canvas')[0] as HTMLCanvasElement
   const ctx = canvas.getContext('2d')
   ctx.putImageData(imageData, 0, 0)
+}
+
+function isMobile(): boolean {
+  if (
+    navigator.userAgent.match(/Android/i)
+    || navigator.userAgent.match(/webOS/i)
+    || navigator.userAgent.match(/iPhone/i)
+    || navigator.userAgent.match(/iPad/i)
+    || navigator.userAgent.match(/iPod/i)
+    || navigator.userAgent.match(/BlackBerry/i)
+    || navigator.userAgent.match(/Windows Phone/i)
+  ) {
+    return true
+  } else {
+    return false
+  }
+}
+
+function setupLocalPlayer(room: Colyseus.Room, player: any) {
+  // Create html layout for local player
+  $('#game').append(`
+  <div class="player" id="${player.sessionId}-player">
+    <div class="username" id="${player.sessionId}-username"></div>
+    <div class="canvas" id="${player.sessionId}-canvas" style="width: ${canvasWidth}px; height: ${canvasHeight}px;"></div>
+  </div>
+  `)
+
+  // Set username in layout
+  $('#' + player.sessionId + '-username').text(player.username)
+
+  // Setup blockrain
+  const canvas = $('#' + player.sessionId + '-canvas')
+
+  let renderCount = 0
+  canvas.blockrain({
+    theme: 'candy',
+    onLine: (lines: number, scoreIncrement: number, score: number) => {
+      room.send('line', lines)
+    },
+    onGameOver: (score: number) => {
+      room.send('gameover', score)
+    },
+    onRender: (ctx: CanvasRenderingContext2D) => {
+      renderCount++
+      if (renderCount === dropedFrames) {
+        sendCanvas(room, ctx)
+        renderCount = 0
+      }
+    },
+  })
+
+  // Enable the touch UI if mobile user agent is detected
+  if (isMobile()) {
+    canvas.blockrain('touchControls', true)
+  }
+
+  canvas.blockrain('start')
+}
+
+function setupNetworkPlayer(room: Colyseus.Room, player: any) {
+  // Create html layout for other players
+  $('#game').append(`
+    <div class="player" id="${player.sessionId}-player">
+      <div class="username" id="${player.sessionId}-username"></div>
+      <canvas class="canvas" id="${player.sessionId}-canvas" width="${canvasWidth}" height="${canvasHeight}"></canvas>
+    </div>
+  `)
+
+  // Set username in layout
+  $('#' + player.sessionId + '-username').text(player.username)
+
+  // Handle state updates
+  player.onChange = (changes) => {
+    changes.forEach(change => {
+      switch (change.field) {
+        case 'canvas': receiveCanvas(player.sessionId, change.value)
+        default: void(0)
+      }
+    })
+  }
 }
