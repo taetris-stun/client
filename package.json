@@ -2,7 +2,7 @@
   "name": "taetris-stun-client",
   "version": "1.0.0",
   "main": "dist/index.html",
-  "repository": "https://github.com/taetris-stun/taetris-stun.github.io",
+  "repository": "https://github.com/taetris-stun/client",
   "author": "tinkertoe",
   "license": "MIT",
   "private": true,
